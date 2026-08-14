@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useProducts } from "../context/ProductContext";
 import { useCart } from "../context/CartContext";
 import Footer from "../components/Footer";
-import { Sparkles, ArrowRight, ShoppingBag, Check } from "../components/Icons";
+import { Sparkles, ArrowRight, ShoppingBag } from "../components/Icons";
 
 function ComboOffer() {
   const { comboOffers, products } = useProducts();
@@ -20,7 +20,7 @@ function ComboOffer() {
       numericPrice: combo.dealPrice || combo.numericPrice,
       price: `₹${combo.dealPrice || combo.numericPrice}`,
       size: combo.size || "Combo Pack",
-      image: combo.image || "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop&q=80",
+      image: combo.image || null,
     };
     addToCart(comboItem, 1);
     openCart();
@@ -53,7 +53,15 @@ function ComboOffer() {
             </Link>
           </div>
         ) : (
-          <div className="combo-offers-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "28px", marginTop: "40px" }}>
+          <div
+            className="combo-offers-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: "28px",
+              marginTop: "40px",
+            }}
+          >
             {/* Render Owner-Created Combo Offers */}
             {comboOffers.map((combo) => {
               const savings =
@@ -61,112 +69,199 @@ function ComboOffer() {
                   ? combo.originalPrice - combo.dealPrice
                   : 0;
 
+              const hasImage = Boolean(combo.image && combo.image.trim() !== "");
+
               return (
                 <div
                   key={combo.id}
-                  className="product-card"
+                  className="combo-deal-card"
                   style={{
+                    background: "var(--white)",
                     border: combo.active ? "2px solid var(--rosewood)" : "1px solid var(--line)",
+                    borderRadius: "var(--radius-md)",
+                    padding: "24px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    boxShadow: "var(--shadow-soft)",
                     position: "relative",
                   }}
                 >
                   {combo.active && (
-                    <span className="product-badge badge-bestseller" style={{ top: "12px", left: "12px" }}>
+                    <span
+                      className="product-badge badge-bestseller"
+                      style={{ position: "absolute", top: "16px", right: "16px", left: "auto" }}
+                    >
                       ★ FEATURED DEAL
                     </span>
                   )}
 
-                  <div className="product-card-img-box" style={{ height: "240px" }}>
-                    <img
-                      src={
-                        combo.image ||
-                        "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop&q=80"
-                      }
-                      alt={combo.title}
-                      className="product-card-photo"
-                    />
+                  {/* Render Photo ONLY IF Owner Uploaded/Provided Photo */}
+                  {hasImage && (
+                    <div
+                      className="combo-card-img-box"
+                      style={{
+                        width: "100%",
+                        height: "220px",
+                        borderRadius: "var(--radius-sm)",
+                        overflow: "hidden",
+                        marginBottom: "18px",
+                        background: "var(--ivory-soft)",
+                      }}
+                    >
+                      <img
+                        src={combo.image}
+                        alt={combo.title}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </div>
+                  )}
+
+                  <div className="combo-card-content" style={{ flex: 1 }}>
+                    <span className="product-card-category" style={{ display: "block", marginBottom: "6px" }}>
+                      VALUE BUNDLE
+                    </span>
+                    <h3
+                      className="product-card-title"
+                      style={{ fontSize: "22px", margin: "6px 0 10px", lineHeight: "1.3" }}
+                    >
+                      {combo.title}
+                    </h3>
+                    <p
+                      className="product-card-tagline"
+                      style={{ fontSize: "14.5px", color: "var(--ink-soft)", lineHeight: "1.6", marginBottom: "20px" }}
+                    >
+                      {combo.description}
+                    </p>
                   </div>
 
-                  <div className="product-card-body">
-                    <span className="product-card-category">VALUE BUNDLE</span>
-                    <h3 className="product-card-title">{combo.title}</h3>
-                    <p className="product-card-tagline">{combo.description}</p>
-
-                    {combo.includesFreeGift && (
-                      <div
-                        style={{
-                          background: "var(--moss-light)",
-                          color: "var(--moss)",
-                          fontSize: "12px",
-                          fontWeight: "700",
-                          padding: "6px 12px",
-                          borderRadius: "6px",
-                          marginBottom: "16px",
-                        }}
-                      >
-                        🎁 Includes FREE 25g Rice Powder Gift!
-                      </div>
-                    )}
-
-                    <div className="product-card-footer">
-                      <div className="product-card-price-box">
-                        <span className="product-card-price">₹{combo.dealPrice}</span>
-                        {combo.originalPrice > 0 && (
-                          <strike style={{ color: "var(--ink-soft)", fontSize: "14px", marginLeft: "6px" }}>
-                            ₹{combo.originalPrice}
-                          </strike>
-                        )}
-                        {savings > 0 && (
-                          <span style={{ display: "block", fontSize: "11px", color: "var(--moss)", fontWeight: "800" }}>
-                            Save ₹{savings}
-                          </span>
-                        )}
-                      </div>
-
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => handleAddComboToCart(combo)}
-                      >
-                        <ShoppingBag /> Add Combo to Bag
-                      </button>
+                  <div
+                    className="combo-card-footer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingTop: "16px",
+                      borderTop: "1px dashed var(--line)",
+                      marginTop: "auto",
+                    }}
+                  >
+                    <div className="product-card-price-box">
+                      <span className="product-card-price" style={{ fontSize: "24px" }}>
+                        ₹{combo.dealPrice}
+                      </span>
+                      {combo.originalPrice > 0 && (
+                        <strike style={{ color: "var(--ink-soft)", fontSize: "14px", marginLeft: "8px" }}>
+                          ₹{combo.originalPrice}
+                        </strike>
+                      )}
+                      {savings > 0 && (
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "12px",
+                            color: "var(--moss)",
+                            fontWeight: "800",
+                            marginTop: "2px",
+                          }}
+                        >
+                          Save ₹{savings}
+                        </span>
+                      )}
                     </div>
+
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleAddComboToCart(combo)}
+                    >
+                      <ShoppingBag /> Add Combo to Bag
+                    </button>
                   </div>
                 </div>
               );
             })}
 
-            {/* Render Catalog Products categorized under Value Combo */}
-            {catalogCombos.map((prod) => (
-              <div key={prod.id} className="product-card">
-                <div className="product-card-img-box" style={{ height: "240px" }}>
-                  <img
-                    src={prod.image || "https://via.placeholder.com/300"}
-                    alt={prod.name}
-                    className="product-card-photo"
-                  />
-                </div>
+            {/* Render Catalog Products Categorized under Value Combo */}
+            {catalogCombos.map((prod) => {
+              const hasImage = Boolean(prod.image && prod.image.trim() !== "");
 
-                <div className="product-card-body">
-                  <span className="product-card-category">VALUE COMBO</span>
-                  <h3 className="product-card-title">{prod.name}</h3>
-                  <p className="product-card-tagline">{prod.tagline}</p>
+              return (
+                <div
+                  key={prod.id}
+                  className="combo-deal-card"
+                  style={{
+                    background: "var(--white)",
+                    border: "1px solid var(--line)",
+                    borderRadius: "var(--radius-md)",
+                    padding: "24px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    boxShadow: "var(--shadow-soft)",
+                  }}
+                >
+                  {hasImage && (
+                    <div
+                      className="combo-card-img-box"
+                      style={{
+                        width: "100%",
+                        height: "220px",
+                        borderRadius: "var(--radius-sm)",
+                        overflow: "hidden",
+                        marginBottom: "18px",
+                        background: "var(--ivory-soft)",
+                      }}
+                    >
+                      <img
+                        src={prod.image}
+                        alt={prod.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </div>
+                  )}
 
-                  <div className="product-card-footer">
+                  <div className="combo-card-content" style={{ flex: 1 }}>
+                    <span className="product-card-category" style={{ display: "block", marginBottom: "6px" }}>
+                      VALUE COMBO
+                    </span>
+                    <h3 className="product-card-title" style={{ fontSize: "22px", margin: "6px 0 10px" }}>
+                      {prod.name}
+                    </h3>
+                    <p className="product-card-tagline" style={{ fontSize: "14.5px", color: "var(--ink-soft)", marginBottom: "20px" }}>
+                      {prod.tagline || prod.description}
+                    </p>
+                  </div>
+
+                  <div
+                    className="combo-card-footer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingTop: "16px",
+                      borderTop: "1px dashed var(--line)",
+                      marginTop: "auto",
+                    }}
+                  >
                     <div className="product-card-price-box">
-                      <span className="product-card-price">{prod.price}</span>
-                      <span className="product-card-size">({prod.size})</span>
+                      <span className="product-card-price" style={{ fontSize: "24px" }}>
+                        {prod.price}
+                      </span>
+                      <span className="product-card-size" style={{ marginLeft: "6px" }}>
+                        ({prod.size})
+                      </span>
                     </div>
 
                     <button
-                      className="btn btn-primary btn-sm"
+                      className="btn btn-primary"
                       onClick={() => handleAddComboToCart(prod)}
                     >
                       <ShoppingBag /> Add Combo to Bag
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
