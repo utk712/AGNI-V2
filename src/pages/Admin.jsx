@@ -73,6 +73,8 @@ function Admin() {
   const [comboOriginalPrice, setComboOriginalPrice] = useState("");
   const [comboDealPrice, setComboDealPrice] = useState("");
   const [comboDesc, setComboDesc] = useState("");
+  const [comboImage, setComboImage] = useState("");
+  const [comboImgPreview, setComboImgPreview] = useState(null);
 
   // Expense Form State
   const [expTitle, setExpTitle] = useState("");
@@ -144,6 +146,18 @@ function Admin() {
     }
   };
 
+  const handleComboImgChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setComboImgPreview(reader.result);
+        setComboImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddProductSubmit = (e) => {
     e.preventDefault();
     if (!name || !numericPrice || !size) {
@@ -197,6 +211,7 @@ function Admin() {
       originalPrice: Number(comboOriginalPrice) || 0,
       dealPrice: Number(comboDealPrice),
       description: comboDesc || "Special Botanical Bundle",
+      image: comboImgPreview || comboImage || null,
     });
 
     setSuccessMsg(`Successfully created Special Combo "${createdCombo.title}"!`);
@@ -206,6 +221,8 @@ function Admin() {
     setComboOriginalPrice("");
     setComboDealPrice("");
     setComboDesc("");
+    setComboImage("");
+    setComboImgPreview(null);
   };
 
   const handleToggleBestSeller = (product) => {
@@ -831,6 +848,33 @@ function Admin() {
                     ></textarea>
                   </div>
 
+                  {/* Combo Photo Upload (Optional) */}
+                  <div className="form-group image-upload-box">
+                    <label>Combo Offer Photo (Optional - Upload Image File OR Paste Image URL)</label>
+                    <div className="upload-options-row">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleComboImgChange}
+                        className="file-input-btn"
+                      />
+                      <span>or</span>
+                      <input
+                        type="url"
+                        placeholder="Paste Image URL (https://...)"
+                        value={comboImage}
+                        onChange={(e) => setComboImage(e.target.value)}
+                        className="url-input"
+                      />
+                    </div>
+                    {(comboImgPreview || comboImage) && (
+                      <div className="photo-preview-bar">
+                        <span>Preview:</span>
+                        <img src={comboImgPreview || comboImage} alt="Combo Preview" />
+                      </div>
+                    )}
+                  </div>
+
                   <button type="submit" className="btn btn-primary btn-lg">
                     Create Combo &amp; Set Live <ArrowRight />
                   </button>
@@ -851,6 +895,9 @@ function Admin() {
                     {comboOffers.map((c) => (
                       <div key={c.id} className="mobile-prod-item-card" style={{ borderLeft: c.active ? "4px solid var(--rosewood)" : "1px solid var(--line)" }}>
                         <div className="mobile-prod-top">
+                          {c.image && (
+                            <img src={c.image} alt={c.title} className="mobile-prod-img" />
+                          )}
                           <div className="mobile-prod-details">
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                               <h4>{c.title}</h4>
