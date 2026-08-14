@@ -17,7 +17,11 @@ const links = [
 
 function Navbar() {
   const [open, setOpen] = useState(false);
-  const { totalItemsCount, openCart } = useCart();
+  const { cart, openCart } = useCart();
+
+  const totalItemsCount = Array.isArray(cart)
+    ? cart.reduce((sum, item) => sum + item.quantity, 0)
+    : 0;
 
   useEffect(() => {
     const handleResize = () => {

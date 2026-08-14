@@ -12,7 +12,6 @@ function Admin() {
     clearAllProducts,
     comboOffers,
     addComboOffer,
-    updateComboOffer,
     toggleComboActive,
     deleteComboOffer,
     customerOrders,
@@ -27,6 +26,7 @@ function Admin() {
     purgeStaleMobileCache,
   } = useProducts();
 
+  // Authentication State - ALWAYS initialized to blank string & false!
   const [inputPin, setInputPin] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinError, setPinError] = useState("");
@@ -73,9 +73,6 @@ function Admin() {
   const [comboOriginalPrice, setComboOriginalPrice] = useState("");
   const [comboDealPrice, setComboDealPrice] = useState("");
   const [comboDesc, setComboDesc] = useState("");
-  const [comboImage, setComboImage] = useState("");
-  const [comboImgPreview, setComboImgPreview] = useState(null);
-  const [comboFreeGift, setComboFreeGift] = useState(true);
 
   // Expense Form State
   const [expTitle, setExpTitle] = useState("");
@@ -103,7 +100,7 @@ function Admin() {
     setTimeout(() => setSuccessMsg(""), 5000);
   };
 
-  // 2. SUBSEQUENT LOGIN
+  // 2. SECURE SUBSEQUENT LOGIN
   const handleLogin = (e) => {
     e.preventDefault();
     if (!ownerProfile || !ownerProfile.password) {
@@ -113,6 +110,7 @@ function Admin() {
     if (inputPin === ownerProfile.password) {
       setIsAuthenticated(true);
       setPinError("");
+      setInputPin(""); // Clear password from memory state after unlock
     } else {
       setPinError("Incorrect password. Please enter the password you created during setup.");
     }
@@ -141,18 +139,6 @@ function Admin() {
       reader.onloadend = () => {
         setImagePreview(reader.result);
         setImageUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleComboImgChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setComboImgPreview(reader.result);
-        setComboImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -210,20 +196,16 @@ function Admin() {
       title: comboTitle,
       originalPrice: Number(comboOriginalPrice) || 0,
       dealPrice: Number(comboDealPrice),
-      description: comboDesc || "Includes pure botanical items + FREE Rice Powder!",
-      image: comboImgPreview || comboImage || null,
-      includesFreeGift: comboFreeGift,
+      description: comboDesc || "Special Botanical Bundle",
     });
 
-    setSuccessMsg(`Successfully created Special Combo "${createdCombo.title}" & set as active banner!`);
+    setSuccessMsg(`Successfully created Special Combo "${createdCombo.title}"!`);
     setTimeout(() => setSuccessMsg(""), 4000);
 
     setComboTitle("");
     setComboOriginalPrice("");
     setComboDealPrice("");
     setComboDesc("");
-    setComboImage("");
-    setComboImgPreview(null);
   };
 
   const handleToggleBestSeller = (product) => {
@@ -263,12 +245,18 @@ function Admin() {
     alert("Cloud state synchronized successfully!");
   };
 
-  // Financial Calculations
-  const shippedOrders = customerOrders.filter((o) => o.status === "Shipped" || o.status === "Delivered");
-  const totalRevenue = shippedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-  const totalExpenseAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
+  // Pure Dynamic Financial Calculations (ZERO Hardcoded Numbers)
+  const shippedOrders = Array.isArray(customerOrders)
+    ? customerOrders.filter((o) => o.status === "Shipped" || o.status === "Delivered")
+    : [];
+  const totalRevenue = shippedOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+  const totalExpenseAmount = Array.isArray(expenses)
+    ? expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+    : 0;
   const netProfit = totalRevenue - totalExpenseAmount;
-  const pendingOrdersCount = customerOrders.filter((o) => o.status === "Pending").length;
+  const pendingOrdersCount = Array.isArray(customerOrders)
+    ? customerOrders.filter((o) => o.status === "Pending").length
+    : 0;
 
   const exportMarchEndingCSV = () => {
     let csvContent = "data:text/csv;charset=utf-8,";
@@ -310,9 +298,9 @@ function Admin() {
         <div className="admin-login-card" style={{ maxWidth: "480px" }}>
           <div className="admin-badge">🌿 First Time Owner Registration</div>
           <h2>Setup Your Owner Account</h2>
-          <p>As the store owner, enter your details and create a password. No default master password required!</p>
+          <p>As the store owner, enter your details and create a password.</p>
 
-          <form onSubmit={handleFirstTimeRegistration} className="admin-pin-form">
+          <form onSubmit={handleFirstTimeRegistration} className="admin-pin-form" autoComplete="off">
             <div className="form-group">
               <label htmlFor="reg-name">Your Full Name *</label>
               <input
@@ -321,6 +309,7 @@ function Admin() {
                 placeholder="e.g. Utkarsh"
                 value={regName}
                 onChange={(e) => setRegName(e.target.value)}
+                autoComplete="off"
                 required
               />
             </div>
@@ -333,6 +322,7 @@ function Admin() {
                 placeholder="e.g. 9876543210"
                 value={regPhone}
                 onChange={(e) => setRegPhone(e.target.value)}
+                autoComplete="off"
               />
             </div>
 
@@ -344,6 +334,7 @@ function Admin() {
                 placeholder="e.g. owner@example.com"
                 value={regEmail}
                 onChange={(e) => setRegEmail(e.target.value)}
+                autoComplete="off"
               />
             </div>
 
@@ -355,6 +346,7 @@ function Admin() {
                 placeholder="Create a strong password"
                 value={regPassword}
                 onChange={(e) => setRegPassword(e.target.value)}
+                autoComplete="new-password"
                 required
               />
             </div>
@@ -368,26 +360,28 @@ function Admin() {
     );
   }
 
-  // IF NOT AUTHENTICATED -> SHOW LOGIN WITH OWNER'S CREATED PASSWORD
+  // SECURE LOGIN PROMPT (ALWAYS BLANK FOR ANY VISITOR!)
   if (!isAuthenticated) {
     return (
       <div className="admin-lock-screen">
         <div className="admin-login-card">
           <div className="admin-badge">🔐 Owner Access Studio</div>
-          <h2>Hello, {ownerProfile.name}</h2>
+          <h2>Owner Portal Access</h2>
           <p>Please enter your Owner password to access your dashboard.</p>
 
-          <form onSubmit={handleLogin} className="admin-pin-form">
+          <form onSubmit={handleLogin} className="admin-pin-form" autoComplete="off">
             <input
               type="password"
-              placeholder="Enter Your Password"
+              placeholder="Enter Password"
               value={inputPin}
               onChange={(e) => setInputPin(e.target.value)}
+              autoComplete="new-password"
               autoFocus
+              required
             />
             {pinError && <p className="pin-error-text">{pinError}</p>}
             <button type="submit" className="btn btn-primary btn-block">
-              Unlock Owner Dashboard <ArrowRight />
+              Unlock Dashboard <ArrowRight />
             </button>
           </form>
           <div className="cloud-sync-status">
@@ -785,7 +779,7 @@ function Admin() {
               {/* Create Combo Form */}
               <div className="admin-panel-box" style={{ marginBottom: "30px" }}>
                 <h2>Create Special Combo Deal</h2>
-                <p>Combos created here will automatically display on the Homepage Banner and Storefront!</p>
+                <p>Combos created here will automatically display on the Combo Offers Page (`/combo`) and Homepage Banner!</p>
 
                 <form onSubmit={handleCreateComboSubmit} className="admin-add-form" style={{ marginTop: "16px" }}>
                   <div className="form-group">
@@ -830,53 +824,15 @@ function Admin() {
                     <textarea
                       id="c-desc"
                       rows="3"
-                      placeholder="e.g. Rose Water (100ml) + Beetroot Glow Powder (50g) + Beetroot Lip Balm (20g) + FREE Rice Powder (25g)"
+                      placeholder="e.g. Rose Water (100ml) + Beetroot Glow Powder (50g) + Beetroot Lip Balm (20g)"
                       value={comboDesc}
                       onChange={(e) => setComboDesc(e.target.value)}
                       required
                     ></textarea>
                   </div>
 
-                  {/* Photo Upload */}
-                  <div className="form-group image-upload-box">
-                    <label>Combo Offer Photo (Upload Image OR Paste Image Link)</label>
-                    <div className="upload-options-row">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleComboImgChange}
-                        className="file-input-btn"
-                      />
-                      <span>or</span>
-                      <input
-                        type="url"
-                        placeholder="Paste Image URL"
-                        value={comboImage}
-                        onChange={(e) => setComboImage(e.target.value)}
-                        className="url-input"
-                      />
-                    </div>
-                    {(comboImgPreview || comboImage) && (
-                      <div className="photo-preview-bar">
-                        <span>Preview:</span>
-                        <img src={comboImgPreview || comboImage} alt="Preview" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="form-checkbox-row">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={comboFreeGift}
-                        onChange={(e) => setComboFreeGift(e.target.checked)}
-                      />
-                      Include FREE Rice Powder (25g) Gift Badge
-                    </label>
-                  </div>
-
                   <button type="submit" className="btn btn-primary btn-lg">
-                    Create Combo &amp; Set Live on Homepage <ArrowRight />
+                    Create Combo &amp; Set Live <ArrowRight />
                   </button>
                 </form>
               </div>
@@ -895,11 +851,10 @@ function Admin() {
                     {comboOffers.map((c) => (
                       <div key={c.id} className="mobile-prod-item-card" style={{ borderLeft: c.active ? "4px solid var(--rosewood)" : "1px solid var(--line)" }}>
                         <div className="mobile-prod-top">
-                          {c.image && <img src={c.image} alt={c.title} className="mobile-prod-img" />}
                           <div className="mobile-prod-details">
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                               <h4>{c.title}</h4>
-                              {c.active && <span className="status-badge status-delivered">LIVE BANNER</span>}
+                              {c.active && <span className="status-badge status-delivered">ACTIVE HOMEPAGE BANNER</span>}
                             </div>
                             <p style={{ fontSize: "13px", color: "var(--ink-soft)", margin: "4px 0" }}>{c.description}</p>
                             <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--rosewood)" }}>
@@ -935,7 +890,7 @@ function Admin() {
             </div>
           )}
 
-          {/* SECTION 3: STATS & OVERVIEW */}
+          {/* SECTION 3: STATS & OVERVIEW (DYNAMIC ONLY) */}
           {activeSection === "dashboard" && (
             <div className="admin-section-block">
               <div className="admin-section-header">

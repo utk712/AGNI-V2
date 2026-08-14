@@ -2,8 +2,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useProducts } from "../context/ProductContext";
-import { business, whatsappLink } from "../data/business";
-import { WhatsApp, Sparkles, Trash, X, ArrowRight, ShoppingBag } from "./Icons";
+import { whatsappLink } from "../data/business";
+import { WhatsApp, Trash, X, ArrowRight, ShoppingBag } from "./Icons";
 
 function CartDrawer() {
   const {
@@ -13,9 +13,6 @@ function CartDrawer() {
     removeFromCart,
     updateQuantity,
     subtotal,
-    freeGiftUnlocked,
-    amountLeftForFreeGift,
-    freeGiftThreshold,
     clearCart,
   } = useCart();
 
@@ -32,16 +29,16 @@ function CartDrawer() {
     e.preventDefault();
     if (cart.length === 0) return;
 
-    // Automatically record order in Owner Accounting System
     const orderItems = cart.map((item) => ({
       name: item.product.name,
-      size: item.product.size,
+      size: item.product.size || "Standard",
       quantity: item.quantity,
       price: item.product.numericPrice,
     }));
 
-    const finalTotal = subtotal >= 150 ? subtotal : subtotal + 40;
+    const finalTotal = subtotal;
 
+    // Record order in Owner Accounting System
     createCustomerOrder({
       customerName: customerName || "Customer",
       phone: customerPhone || "Not specified",
@@ -49,21 +46,16 @@ function CartDrawer() {
       items: orderItems,
       subtotal: subtotal,
       totalAmount: finalTotal,
-      freeGift: freeGiftUnlocked,
     });
 
     let itemsListText = cart
       .map(
         (item, index) =>
-          `${index + 1}. *${item.product.name}* (${item.product.size}) - Qty: ${item.quantity} x ${item.product.price} = ₹${item.product.numericPrice * item.quantity}`
+          `${index + 1}. *${item.product.name}* (${item.product.size || "Standard"}) - Qty: ${item.quantity} x ₹${item.product.numericPrice} = ₹${item.product.numericPrice * item.quantity}`
       )
       .join("\n");
 
-    if (freeGiftUnlocked) {
-      itemsListText += `\n\n🎁 *SPECIAL FREE GIFT INCLUDED*: Rice Powder (25g) - ₹0`;
-    }
-
-    const message = `🌿 *NEW ORDER FROM AKSHAYA GLOW NATURALS WEBSITE*
+    const message = `🌿 *NEW ORDER FROM AKSHAYA GLOW NATURALS*
 
 *Customer Details:*
 👤 *Name:* ${customerName || "Customer"}
@@ -75,8 +67,6 @@ ${note ? `📝 *Note:* ${note}\n` : ""}
 ${itemsListText}
 
 ---
-💵 *Subtotal:* ₹${subtotal}
-🚚 *Delivery Fee:* ${subtotal >= 150 ? "FREE 🎉" : "Standard ₹40"}
 💰 *TOTAL AMOUNT:* ₹${finalTotal}
 
 Please confirm availability and share payment details (UPI/PhonePe). Thank you!`;
@@ -87,8 +77,6 @@ Please confirm availability and share payment details (UPI/PhonePe). Thank you!`
     clearCart();
     closeCart();
   };
-
-  const giftProgressPercent = Math.min(100, Math.round((subtotal / freeGiftThreshold) * 100));
 
   return (
     <AnimatePresence>
@@ -105,34 +93,12 @@ Please confirm availability and share payment details (UPI/PhonePe). Thank you!`
           <div className="cart-header">
             <div className="cart-header-title">
               <ShoppingBag />
-              <h2>Your Botanical Bag</h2>
+              <h2>Your Shopping Bag</h2>
               <span className="cart-count-badge">{cart.reduce((a, b) => a + b.quantity, 0)}</span>
             </div>
             <button className="cart-close-btn" onClick={closeCart} aria-label="Close cart">
               <X />
             </button>
-          </div>
-
-          {/* Free Gift Progress Banner */}
-          <div className="cart-gift-banner">
-            <div className="gift-banner-text">
-              <Sparkles />
-              {freeGiftUnlocked ? (
-                <span>
-                  <strong>Congratulations!</strong> Free 25g Rice Powder unlocked! 🎉
-                </span>
-              ) : (
-                <span>
-                  Add <strong>₹{amountLeftForFreeGift}</strong> more for <strong>FREE Rice Powder (25g)</strong>!
-                </span>
-              )}
-            </div>
-            <div className="gift-progress-track">
-              <div
-                className="gift-progress-fill"
-                style={{ width: `${giftProgressPercent}%` }}
-              ></div>
-            </div>
           </div>
 
           {/* Cart Body */}
@@ -141,9 +107,9 @@ Please confirm availability and share payment details (UPI/PhonePe). Thank you!`
               <div className="empty-cart-state">
                 <div className="empty-cart-icon">🌿</div>
                 <h3>Your bag is currently empty</h3>
-                <p>Explore our handcrafted botanical oils, waters, and powders to get glowing!</p>
+                <p>Explore our handcrafted botanical products to get glowing!</p>
                 <button className="btn btn-primary" onClick={closeCart}>
-                  Browse Products <ArrowRight />
+                  Browse Store Items <ArrowRight />
                 </button>
               </div>
             ) : (
@@ -152,7 +118,7 @@ Please confirm availability and share payment details (UPI/PhonePe). Thank you!`
                   {cart.map((item) => (
                     <div key={item.product.id} className="cart-item-card">
                       <img
-                        src={item.product.image}
+                        src={item.product.image || "https://via.placeholder.com/60"}
                         alt={item.product.name}
                         className="cart-item-img"
                       />
@@ -167,7 +133,7 @@ Please confirm availability and share payment details (UPI/PhonePe). Thank you!`
                             <Trash />
                           </button>
                         </div>
-                        <span className="cart-item-size">{item.product.size}</span>
+                        <span className="cart-item-size">{item.product.size || "Standard"}</span>
                         <div className="cart-item-bottom">
                           <span className="cart-item-price">
                             ₹{item.product.numericPrice * item.quantity}
@@ -193,39 +159,29 @@ Please confirm availability and share payment details (UPI/PhonePe). Thank you!`
                   ))}
                 </div>
 
-                {/* Free Gift Preview if unlocked */}
-                {freeGiftUnlocked && (
-                  <div className="free-gift-preview-card">
-                    <span className="free-badge">FREE GIFT</span>
-                    <div className="gift-info">
-                      <h4>Rice Powder (25g)</h4>
-                      <p>Brightening, oil-absorbing finish pack</p>
-                    </div>
-                    <span className="gift-price">₹0</span>
-                  </div>
-                )}
-
                 {/* Customer Checkout Form */}
                 <div className="checkout-form-section">
-                  <h3>Shipping &amp; Contact Info</h3>
+                  <h3>Contact &amp; Delivery Details</h3>
                   <div className="form-group">
-                    <label htmlFor="cust-name">Your Full Name</label>
+                    <label htmlFor="cust-name">Your Full Name *</label>
                     <input
                       id="cust-name"
                       type="text"
                       placeholder="e.g. Ananya Sharma"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="cust-phone">WhatsApp Phone Number</label>
+                    <label htmlFor="cust-phone">WhatsApp Phone Number *</label>
                     <input
                       id="cust-phone"
                       type="tel"
                       placeholder="e.g. 9876543210"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
+                      required
                     />
                   </div>
                   <div className="form-group">
@@ -246,19 +202,9 @@ Please confirm availability and share payment details (UPI/PhonePe). Thank you!`
           {/* Footer / Checkout */}
           {cart.length > 0 && (
             <div className="cart-footer">
-              <div className="summary-row">
+              <div className="summary-row total-row">
                 <span>Subtotal</span>
                 <strong>₹{subtotal}</strong>
-              </div>
-              <div className="summary-row">
-                <span>Delivery</span>
-                <span className={subtotal >= 150 ? "free-text" : ""}>
-                  {subtotal >= 150 ? "FREE" : "₹40"}
-                </span>
-              </div>
-              <div className="summary-row total-row">
-                <span>Estimated Total</span>
-                <strong>₹{subtotal >= 150 ? subtotal : subtotal + 40}</strong>
               </div>
 
               <button
@@ -268,7 +214,7 @@ Please confirm availability and share payment details (UPI/PhonePe). Thank you!`
                 <WhatsApp /> Send Order on WhatsApp
               </button>
               <p className="cart-secure-note">
-                🔒 Orders sent directly to Akshaya Glow Naturals via WhatsApp &amp; automatically logged in Owner Accounting!
+                🔒 Orders sent directly to Akshaya Glow Naturals via WhatsApp!
               </p>
             </div>
           )}

@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { business } from "../data/business";
 
 const CartContext = createContext();
 
@@ -61,10 +60,6 @@ export function CartProvider({ children }) {
     return acc + item.product.numericPrice * item.quantity;
   }, 0);
 
-  const freeGiftThreshold = business.freeGiftThreshold || 150;
-  const freeGiftUnlocked = subtotal >= freeGiftThreshold;
-  const amountLeftForFreeGift = Math.max(0, freeGiftThreshold - subtotal);
-
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
@@ -77,9 +72,6 @@ export function CartProvider({ children }) {
         updateQuantity,
         clearCart,
         subtotal,
-        freeGiftUnlocked,
-        amountLeftForFreeGift,
-        freeGiftThreshold,
         isCartOpen,
         openCart,
         closeCart,
