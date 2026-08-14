@@ -7,6 +7,7 @@ const ProductContext = createContext();
 export function ProductProvider({ children }) {
   // Default to 0 hardcoded products
   const [products, setProducts] = useState([]);
+  const [comboOffers, setComboOffers] = useState([]);
   const [customerOrders, setCustomerOrders] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [ownerProfile, setOwnerProfile] = useState(() => {
@@ -27,6 +28,11 @@ export function ProductProvider({ children }) {
       if (savedProds) {
         const parsed = JSON.parse(savedProds);
         if (Array.isArray(parsed)) setProducts(parsed);
+      }
+      const savedCombos = localStorage.getItem("agni_combo_offers_v2");
+      if (savedCombos) {
+        const parsed = JSON.parse(savedCombos);
+        if (Array.isArray(parsed)) setComboOffers(parsed);
       }
       const savedOrders = localStorage.getItem("agni_customer_orders_v2");
       if (savedOrders) setCustomerOrders(JSON.parse(savedOrders));
@@ -49,6 +55,10 @@ export function ProductProvider({ children }) {
         if (cloudData.products && Array.isArray(cloudData.products)) {
           setProducts(cloudData.products);
           localStorage.setItem("agni_custom_products_v2", JSON.stringify(cloudData.products));
+        }
+        if (cloudData.comboOffers && Array.isArray(cloudData.comboOffers)) {
+          setComboOffers(cloudData.comboOffers);
+          localStorage.setItem("agni_combo_offers_v2", JSON.stringify(cloudData.comboOffers));
         }
         if (cloudData.customerOrders && Array.isArray(cloudData.customerOrders)) {
           setCustomerOrders(cloudData.customerOrders);
@@ -77,9 +87,10 @@ export function ProductProvider({ children }) {
   }, []);
 
   // Helper to persist all data to Cloud Master
-  const persistState = (newProds, newOrders, newExps, newProfile) => {
+  const persistState = (newProds, newCombos, newOrders, newExps, newProfile) => {
     const dataToSave = {
       products: newProds !== undefined ? newProds : products,
+      comboOffers: newCombos !== undefined ? newCombos : comboOffers,
       customerOrders: newOrders !== undefined ? newOrders : customerOrders,
       expenses: newExps !== undefined ? newExps : expenses,
       ownerProfile: newProfile !== undefined ? newProfile : ownerProfile,
@@ -95,7 +106,7 @@ export function ProductProvider({ children }) {
     };
     setOwnerProfile(updated);
     localStorage.setItem("agni_owner_profile_v2", JSON.stringify(updated));
-    persistState(products, customerOrders, expenses, updated);
+    persistState(products, comboOffers, customerOrders, expenses, updated);
     return updated;
   };
 
@@ -115,7 +126,7 @@ export function ProductProvider({ children }) {
     const updated = [productToAdd, ...products];
     setProducts(updated);
     localStorage.setItem("agni_custom_products_v2", JSON.stringify(updated));
-    persistState(updated, customerOrders, expenses, ownerProfile);
+    persistState(updated, comboOffers, customerOrders, expenses, ownerProfile);
     return productToAdd;
   };
 
@@ -136,20 +147,66 @@ export function ProductProvider({ children }) {
     });
     setProducts(updated);
     localStorage.setItem("agni_custom_products_v2", JSON.stringify(updated));
-    persistState(updated, customerOrders, expenses, ownerProfile);
+    persistState(updated, comboOffers, customerOrders, expenses, ownerProfile);
   };
 
   const deleteProduct = (id) => {
     const updated = products.filter((p) => p.id !== id);
     setProducts(updated);
     localStorage.setItem("agni_custom_products_v2", JSON.stringify(updated));
-    persistState(updated, customerOrders, expenses, ownerProfile);
+    persistState(updated, comboOffers, customerOrders, expenses, ownerProfile);
   };
 
   const clearAllProducts = () => {
     setProducts([]);
     localStorage.setItem("agni_custom_products_v2", JSON.stringify([]));
-    persistState([], customerOrders, expenses, ownerProfile);
+    persistState([], comboOffers, customerOrders, expenses, ownerProfile);
+  };
+
+  // Combo Offers Operations
+  const addComboOffer = (comboData) => {
+    const id = Date.now();
+    const newCombo = {
+      id,
+      title: comboData.title || "Special Glow Combo",
+      originalPrice: Number(comboData.originalPrice) || 0,
+      dealPrice: Number(comboData.dealPrice) || 0,
+      description: comboData.description || "",
+      image: comboData.image || null,
+      includesFreeGift: Boolean(comboData.includesFreeGift),
+      active: true,
+    };
+
+    // If making this active, deactivate others
+    const updated = [newCombo, ...comboOffers.map(c => ({ ...c, active: false }))];
+    setComboOffers(updated);
+    localStorage.setItem("agni_combo_offers_v2", JSON.stringify(updated));
+    persistState(products, updated, customerOrders, expenses, ownerProfile);
+    return newCombo;
+  };
+
+  const updateComboOffer = (id, updatedFields) => {
+    const updated = comboOffers.map((c) => (c.id === id ? { ...c, ...updatedFields } : c));
+    setComboOffers(updated);
+    localStorage.setItem("agni_combo_offers_v2", JSON.stringify(updated));
+    persistState(products, updated, customerOrders, expenses, ownerProfile);
+  };
+
+  const toggleComboActive = (id) => {
+    const updated = comboOffers.map((c) => ({
+      ...c,
+      active: c.id === id ? !c.active : false, // Only 1 active combo offer banner at a time
+    }));
+    setComboOffers(updated);
+    localStorage.setItem("agni_combo_offers_v2", JSON.stringify(updated));
+    persistState(products, updated, customerOrders, expenses, ownerProfile);
+  };
+
+  const deleteComboOffer = (id) => {
+    const updated = comboOffers.filter((c) => c.id !== id);
+    setComboOffers(updated);
+    localStorage.setItem("agni_combo_offers_v2", JSON.stringify(updated));
+    persistState(products, updated, customerOrders, expenses, ownerProfile);
   };
 
   const createCustomerOrder = (orderData) => {
@@ -169,7 +226,7 @@ export function ProductProvider({ children }) {
     const updatedOrders = [newOrder, ...customerOrders];
     setCustomerOrders(updatedOrders);
     localStorage.setItem("agni_customer_orders_v2", JSON.stringify(updatedOrders));
-    persistState(products, updatedOrders, expenses, ownerProfile);
+    persistState(products, comboOffers, updatedOrders, expenses, ownerProfile);
     return newOrder;
   };
 
@@ -179,14 +236,14 @@ export function ProductProvider({ children }) {
     );
     setCustomerOrders(updatedOrders);
     localStorage.setItem("agni_customer_orders_v2", JSON.stringify(updatedOrders));
-    persistState(products, updatedOrders, expenses, ownerProfile);
+    persistState(products, comboOffers, updatedOrders, expenses, ownerProfile);
   };
 
   const deleteCustomerOrder = (orderId) => {
     const updatedOrders = customerOrders.filter((o) => o.id !== orderId);
     setCustomerOrders(updatedOrders);
     localStorage.setItem("agni_customer_orders_v2", JSON.stringify(updatedOrders));
-    persistState(products, updatedOrders, expenses, ownerProfile);
+    persistState(products, comboOffers, updatedOrders, expenses, ownerProfile);
   };
 
   const addExpense = (exp) => {
@@ -199,14 +256,14 @@ export function ProductProvider({ children }) {
     const updatedExpenses = [newExp, ...expenses];
     setExpenses(updatedExpenses);
     localStorage.setItem("agni_expenses_v2", JSON.stringify(updatedExpenses));
-    persistState(products, customerOrders, updatedExpenses, ownerProfile);
+    persistState(products, comboOffers, customerOrders, updatedExpenses, ownerProfile);
   };
 
   const deleteExpense = (id) => {
     const updatedExpenses = expenses.filter((e) => e.id !== id);
     setExpenses(updatedExpenses);
     localStorage.setItem("agni_expenses_v2", JSON.stringify(updatedExpenses));
-    persistState(products, customerOrders, updatedExpenses, ownerProfile);
+    persistState(products, comboOffers, customerOrders, updatedExpenses, ownerProfile);
   };
 
   const purgeStaleMobileCache = async () => {
@@ -217,6 +274,7 @@ export function ProductProvider({ children }) {
     const cloudData = await fetchCloudStore();
     if (cloudData) {
       if (cloudData.products) setProducts(cloudData.products);
+      if (cloudData.comboOffers) setComboOffers(cloudData.comboOffers);
       if (cloudData.customerOrders) setCustomerOrders(cloudData.customerOrders);
       if (cloudData.expenses) setExpenses(cloudData.expenses);
       if (cloudData.ownerProfile) setOwnerProfile(cloudData.ownerProfile);
@@ -231,6 +289,11 @@ export function ProductProvider({ children }) {
         updateProduct,
         deleteProduct,
         clearAllProducts,
+        comboOffers,
+        addComboOffer,
+        updateComboOffer,
+        toggleComboActive,
+        deleteComboOffer,
         customerOrders,
         createCustomerOrder,
         updateOrderStatus,

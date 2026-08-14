@@ -1,38 +1,58 @@
-import { WhatsApp } from "./Icons";
-import { business, whatsappLink } from "../data/business";
+import { Link } from "react-router-dom";
+import { useProducts } from "../context/ProductContext";
+import { useCart } from "../context/CartContext";
+import { Sparkles, ArrowRight } from "./Icons";
 
 function ComboOfferBanner() {
+  const { comboOffers } = useProducts();
+  const { addToCart, openCart } = useCart();
+
+  // Find owner's active combo offer
+  const activeCombo = comboOffers.find((c) => c.active) || comboOffers[0];
+
+  if (!activeCombo) {
+    return null; // Don't render banner if owner hasn't created a combo deal yet
+  }
+
+  const savings = activeCombo.originalPrice && activeCombo.originalPrice > activeCombo.dealPrice
+    ? activeCombo.originalPrice - activeCombo.dealPrice
+    : 0;
+
+  const handleAddComboToCart = () => {
+    const comboProductItem = {
+      id: activeCombo.id || Date.now(),
+      name: activeCombo.title,
+      numericPrice: activeCombo.dealPrice,
+      price: `₹${activeCombo.dealPrice}`,
+      size: "Combo Pack",
+      image: activeCombo.image || "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop&q=80",
+    };
+    addToCart(comboProductItem, 1);
+    openCart();
+  };
+
   return (
-    <section className="combo-section">
-      <div className="combo-left">
-        <span className="eyebrow">Limited Time</span>
-        <h2 className="section-heading">Natural Glow Combo</h2>
+    <section className="combo-banner-section container">
+      <div className="combo-banner-card">
+        <div className="combo-banner-content">
+          <span className="eyebrow"><Sparkles /> Limited Small Batch Deal</span>
+          <h2>{activeCombo.title}</h2>
+          <p>{activeCombo.description}</p>
 
-        <p className="combo-text">
-          Buy any <strong>2 products</strong> and get <strong>Rice Powder 25g free</strong>
-        </p>
+          <div className="combo-price-row">
+            {activeCombo.originalPrice > 0 && (
+              <span className="combo-original-price">₹{activeCombo.originalPrice}</span>
+            )}
+            <span className="combo-deal-price">₹{activeCombo.dealPrice}</span>
+            {savings > 0 && (
+              <span className="combo-save-badge">Save ₹{savings} {activeCombo.includesFreeGift ? "+ FREE GIFT" : ""}</span>
+            )}
+          </div>
 
-        <div className="combo-products">
-          <span>Beetroot Powder 50g</span>
-          <span>+</span>
-          <span>Rose Powder 50g</span>
-          <span>+</span>
-          <span>Rice Powder 25g free</span>
+          <button onClick={handleAddComboToCart} className="btn btn-primary btn-lg">
+            Shop {activeCombo.title} <ArrowRight />
+          </button>
         </div>
-
-        <a
-          href={whatsappLink(`Hello ${business.name}, I'd like to order the Natural Glow Combo (₹199).`)}
-          target="_blank"
-          rel="noreferrer"
-          className="btn btn-whatsapp combo-cta"
-        >
-          <WhatsApp /> Claim This Combo
-        </a>
-      </div>
-
-      <div className="combo-price">
-        <h1>₹199</h1>
-        <p>Special Offer</p>
       </div>
     </section>
   );

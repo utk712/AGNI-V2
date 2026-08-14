@@ -10,6 +10,11 @@ function Admin() {
     updateProduct,
     deleteProduct,
     clearAllProducts,
+    comboOffers,
+    addComboOffer,
+    updateComboOffer,
+    toggleComboActive,
+    deleteComboOffer,
     customerOrders,
     updateOrderStatus,
     deleteCustomerOrder,
@@ -62,6 +67,15 @@ function Admin() {
   const [imageUrl, setImageUrl] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [bestSeller, setBestSeller] = useState(false);
+
+  // Combo Form State
+  const [comboTitle, setComboTitle] = useState("");
+  const [comboOriginalPrice, setComboOriginalPrice] = useState("");
+  const [comboDealPrice, setComboDealPrice] = useState("");
+  const [comboDesc, setComboDesc] = useState("");
+  const [comboImage, setComboImage] = useState("");
+  const [comboImgPreview, setComboImgPreview] = useState(null);
+  const [comboFreeGift, setComboFreeGift] = useState(true);
 
   // Expense Form State
   const [expTitle, setExpTitle] = useState("");
@@ -132,6 +146,18 @@ function Admin() {
     }
   };
 
+  const handleComboImgChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setComboImgPreview(reader.result);
+        setComboImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddProductSubmit = (e) => {
     e.preventDefault();
     if (!name || !numericPrice || !size) {
@@ -171,6 +197,33 @@ function Admin() {
     setImageUrl("");
     setImagePreview(null);
     setBestSeller(false);
+  };
+
+  const handleCreateComboSubmit = (e) => {
+    e.preventDefault();
+    if (!comboTitle || !comboDealPrice) {
+      alert("Please enter Combo Title and Offer Deal Price.");
+      return;
+    }
+
+    const createdCombo = addComboOffer({
+      title: comboTitle,
+      originalPrice: Number(comboOriginalPrice) || 0,
+      dealPrice: Number(comboDealPrice),
+      description: comboDesc || "Includes pure botanical items + FREE Rice Powder!",
+      image: comboImgPreview || comboImage || null,
+      includesFreeGift: comboFreeGift,
+    });
+
+    setSuccessMsg(`Successfully created Special Combo "${createdCombo.title}" & set as active banner!`);
+    setTimeout(() => setSuccessMsg(""), 4000);
+
+    setComboTitle("");
+    setComboOriginalPrice("");
+    setComboDealPrice("");
+    setComboDesc("");
+    setComboImage("");
+    setComboImgPreview(null);
   };
 
   const handleToggleBestSeller = (product) => {
@@ -362,7 +415,13 @@ function Admin() {
               className={`sidebar-link ${activeSection === "products" ? "active" : ""}`}
               onClick={() => setActiveSection("products")}
             >
-              🛍️ Manage Catalog ({products.length})
+              🛍️ Products Catalog ({products.length})
+            </button>
+            <button
+              className={`sidebar-link ${activeSection === "combos" ? "active" : ""}`}
+              onClick={() => setActiveSection("combos")}
+            >
+              🎁 Special Combo Offers ({comboOffers.length})
             </button>
             <button
               className={`sidebar-link ${activeSection === "dashboard" ? "active" : ""}`}
@@ -416,8 +475,8 @@ function Admin() {
             <div className="admin-section-block">
               <div className="admin-section-header">
                 <div>
-                  <span className="eyebrow"><Sparkles /> Market Ready Catalog</span>
-                  <h1>Products &amp; Combos Catalog</h1>
+                  <span className="eyebrow"><Sparkles /> Store Catalog</span>
+                  <h1>Products &amp; Items Manager</h1>
                 </div>
               </div>
 
@@ -590,11 +649,10 @@ function Admin() {
                 {products.length === 0 ? (
                   <div className="empty-state-box" style={{ textAlign: "center", padding: "40px 20px" }}>
                     <h3>No products in your store yet</h3>
-                    <p>Use the form above to add your first product! It will appear live on your website instantly.</p>
+                    <p>Use the form above to add your first product!</p>
                   </div>
                 ) : (
                   <>
-                    {/* Mobile Product Item Cards */}
                     <div className="mobile-product-cards-list">
                       {products.map((prod) => (
                         <div key={prod.id} className="mobile-prod-item-card">
@@ -633,7 +691,6 @@ function Admin() {
                               />
                             </div>
 
-                            {/* BEST SELLER TOGGLE */}
                             <button
                               className={`btn-bestseller-toggle ${prod.bestSeller ? "active" : ""}`}
                               onClick={() => handleToggleBestSeller(prod)}
@@ -645,7 +702,6 @@ function Admin() {
                       ))}
                     </div>
 
-                    {/* Desktop Table View */}
                     <div className="table-responsive desktop-catalog-table">
                       <table className="admin-ledger-table">
                         <thead>
@@ -716,7 +772,170 @@ function Admin() {
             </div>
           )}
 
-          {/* SECTION 2: STATS & OVERVIEW */}
+          {/* SECTION 2: SPECIAL COMBO OFFERS BUILDER */}
+          {activeSection === "combos" && (
+            <div className="admin-section-block">
+              <div className="admin-section-header">
+                <div>
+                  <span className="eyebrow"><Sparkles /> High Value Deals</span>
+                  <h1>Special Combo Offers Builder</h1>
+                </div>
+              </div>
+
+              {/* Create Combo Form */}
+              <div className="admin-panel-box" style={{ marginBottom: "30px" }}>
+                <h2>Create Special Combo Deal</h2>
+                <p>Combos created here will automatically display on the Homepage Banner and Storefront!</p>
+
+                <form onSubmit={handleCreateComboSubmit} className="admin-add-form" style={{ marginTop: "16px" }}>
+                  <div className="form-group">
+                    <label htmlFor="c-title">Combo Offer Name *</label>
+                    <input
+                      id="c-title"
+                      type="text"
+                      placeholder="e.g. Glow Radiance Combo Pack"
+                      value={comboTitle}
+                      onChange={(e) => setComboTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-grid-2">
+                    <div className="form-group">
+                      <label htmlFor="c-orig-price">Original Price ₹ (MRP)</label>
+                      <input
+                        id="c-orig-price"
+                        type="number"
+                        placeholder="e.g. 190"
+                        value={comboOriginalPrice}
+                        onChange={(e) => setComboOriginalPrice(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="c-deal-price">Special Offer Deal Price ₹ *</label>
+                      <input
+                        id="c-deal-price"
+                        type="number"
+                        placeholder="e.g. 150"
+                        value={comboDealPrice}
+                        onChange={(e) => setComboDealPrice(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="c-desc">Combo Products Included &amp; Description *</label>
+                    <textarea
+                      id="c-desc"
+                      rows="3"
+                      placeholder="e.g. Rose Water (100ml) + Beetroot Glow Powder (50g) + Beetroot Lip Balm (20g) + FREE Rice Powder (25g)"
+                      value={comboDesc}
+                      onChange={(e) => setComboDesc(e.target.value)}
+                      required
+                    ></textarea>
+                  </div>
+
+                  {/* Photo Upload */}
+                  <div className="form-group image-upload-box">
+                    <label>Combo Offer Photo (Upload Image OR Paste Image Link)</label>
+                    <div className="upload-options-row">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleComboImgChange}
+                        className="file-input-btn"
+                      />
+                      <span>or</span>
+                      <input
+                        type="url"
+                        placeholder="Paste Image URL"
+                        value={comboImage}
+                        onChange={(e) => setComboImage(e.target.value)}
+                        className="url-input"
+                      />
+                    </div>
+                    {(comboImgPreview || comboImage) && (
+                      <div className="photo-preview-bar">
+                        <span>Preview:</span>
+                        <img src={comboImgPreview || comboImage} alt="Preview" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-checkbox-row">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={comboFreeGift}
+                        onChange={(e) => setComboFreeGift(e.target.checked)}
+                      />
+                      Include FREE Rice Powder (25g) Gift Badge
+                    </label>
+                  </div>
+
+                  <button type="submit" className="btn btn-primary btn-lg">
+                    Create Combo &amp; Set Live on Homepage <ArrowRight />
+                  </button>
+                </form>
+              </div>
+
+              {/* Combo Offers List */}
+              <div className="admin-panel-box">
+                <h2>Created Combo Deals ({comboOffers.length})</h2>
+
+                {comboOffers.length === 0 ? (
+                  <div className="empty-state-box" style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <h3>No Special Combos Created Yet</h3>
+                    <p>Use the form above to create your first Special Combo Offer!</p>
+                  </div>
+                ) : (
+                  <div className="mobile-product-cards-list" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    {comboOffers.map((c) => (
+                      <div key={c.id} className="mobile-prod-item-card" style={{ borderLeft: c.active ? "4px solid var(--rosewood)" : "1px solid var(--line)" }}>
+                        <div className="mobile-prod-top">
+                          {c.image && <img src={c.image} alt={c.title} className="mobile-prod-img" />}
+                          <div className="mobile-prod-details">
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <h4>{c.title}</h4>
+                              {c.active && <span className="status-badge status-delivered">LIVE BANNER</span>}
+                            </div>
+                            <p style={{ fontSize: "13px", color: "var(--ink-soft)", margin: "4px 0" }}>{c.description}</p>
+                            <span style={{ fontSize: "14px", fontWeight: "700", color: "var(--rosewood)" }}>
+                              Deal Price: ₹{c.dealPrice} {c.originalPrice ? <strike style={{ color: "var(--ink-soft)", fontSize: "12px", marginLeft: "6px" }}>₹{c.originalPrice}</strike> : ""}
+                            </span>
+                          </div>
+                          <button
+                            className="admin-delete-btn"
+                            onClick={() => {
+                              if (confirm(`Delete combo offer "${c.title}"?`)) {
+                                deleteComboOffer(c.id);
+                              }
+                            }}
+                            title="Delete Combo"
+                          >
+                            <Trash />
+                          </button>
+                        </div>
+
+                        <div className="mobile-prod-bottom">
+                          <button
+                            className={`btn-bestseller-toggle ${c.active ? "active" : ""}`}
+                            onClick={() => toggleComboActive(c.id)}
+                          >
+                            {c.active ? "★ Active Homepage Banner" : "Set as Active Banner"}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 3: STATS & OVERVIEW */}
           {activeSection === "dashboard" && (
             <div className="admin-section-block">
               <div className="admin-section-header">
@@ -751,7 +970,7 @@ function Admin() {
             </div>
           )}
 
-          {/* SECTION 3: INCOMING ORDERS */}
+          {/* SECTION 4: INCOMING ORDERS */}
           {activeSection === "orders" && (
             <div className="admin-section-block">
               <div className="admin-section-header">
@@ -824,7 +1043,7 @@ function Admin() {
             </div>
           )}
 
-          {/* SECTION 4: ACCOUNTING LEDGER */}
+          {/* SECTION 5: ACCOUNTING LEDGER */}
           {activeSection === "accounting" && (
             <div className="admin-section-block">
               <div className="admin-section-header">
@@ -838,7 +1057,6 @@ function Admin() {
               </div>
 
               <div className="admin-panel-box">
-                {/* Record Expense Form */}
                 <form onSubmit={handleRecordExpense} style={{ marginBottom: "20px" }}>
                   <h3>Record Business Expense</h3>
                   <div className="form-grid-2">
@@ -865,7 +1083,7 @@ function Admin() {
             </div>
           )}
 
-          {/* SECTION 5: OWNER PROFILE & PASSWORD */}
+          {/* SECTION 6: OWNER PROFILE & PASSWORD */}
           {activeSection === "profile" && (
             <div className="admin-section-block">
               <div className="admin-section-header">
