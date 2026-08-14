@@ -1,47 +1,84 @@
 import Footer from "../components/Footer";
-import { Sparkles, Check } from "../components/Icons";
+import { Leaf, HandHeart, Tag, IngredientStamp } from "../components/Icons";
+import rosePetals from "../assets/ingredients/rose-petals-1.jpg";
+
+const ingredients = [
+  { label: "Rose Petals", kind: "rose" },
+  { label: "Beetroot", kind: "beet" },
+  { label: "Rice", kind: "grain" },
+  { label: "Amla, Carrot & Herbs", kind: "herbal" },
+];
+
+const reasons = [
+  "100% natural ingredients",
+  "Chemical free",
+  "Handmade in small batches",
+  "Skin friendly",
+  "Affordable pricing",
+  "No mass production, no fillers",
+];
 
 function About() {
   return (
     <>
-      <div className="about-page container">
-        <div className="about-hero text-center">
-          <span className="eyebrow"><Sparkles /> Our Botanical Journey</span>
-          <h1>Akshaya Glow Naturals</h1>
-          <p className="about-subtitle">
-            Handcrafted with love, distilled from fresh flowers, and powdered with pure organic herbs in India.
-          </p>
+      <div className="about-page">
+        <div className="about-hero">
+          <span className="eyebrow">Our Story</span>
+          <h1>About Akshaya Glow Naturals</h1>
+          <p>Nature's goodness, for a natural glow.</p>
         </div>
 
-        <div className="about-content-grid">
-          <div className="about-text-box">
-            <h2>Pure Skincare Made Fresh</h2>
-            <p>
-              Akshaya Glow Naturals (AGNI) was created with a simple vision: to offer honest, chemical-free skincare formulas straight from kitchen distillation to your home.
-            </p>
-            <p>
-              We don't mass-produce in factories. Every bottle of Rose Water is steam-distilled in small copper vessels, and every gram of Beetroot and Rice powder is sun-dried carefully to retain natural vitamin potency.
-            </p>
+        <div className="about-photo-banner">
+          <img src={rosePetals} alt="Fresh rose petals used in our products" />
+          <p>Rose petals from our own sourcing, before they're dried and distilled.</p>
+        </div>
 
-            <div className="about-highlights">
-              <div className="highlight-item">
-                <Check /> <strong>Zero Preservatives:</strong> Free from parabens, sulfates, and artificial scents.
-              </div>
-              <div className="highlight-item">
-                <Check /> <strong>100% Transparent:</strong> Every single ingredient listed clearly on your jar.
-              </div>
-              <div className="highlight-item">
-                <Check /> <strong>Fresh Batches:</strong> Prepared weekly to ensure peak botanical freshness.
-              </div>
-            </div>
+        <div className="about-content">
+          <div className="about-card">
+            <h2><Leaf /> Our Story</h2>
+            <p>
+              Akshaya Glow Naturals is a homemade skincare brand dedicated to
+              creating pure, chemical-free beauty products using traditional
+              methods and natural ingredients.
+            </p>
+            <p>
+              We believe nature already provides everything skin needs to
+              glow. That's why every product is prepared in small batches, by
+              hand, to keep it fresh and honest.
+            </p>
           </div>
 
-          <div className="about-image-box">
-            <img
-              src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop&q=80"
-              alt="Rose Petals Distillation"
-              className="about-photo"
-            />
+          <div className="about-card">
+            <h2><HandHeart /> Our Mission</h2>
+            <p>
+              To make affordable, handmade, natural skincare that's safe,
+              effective and accessible to everyone -- without the long
+              ingredient lists you can't pronounce.
+            </p>
+          </div>
+
+          <div className="about-card">
+            <h2><IngredientStamp kind="rose" /> Ingredients We Use</h2>
+            <ul>
+              {ingredients.map((i) => (
+                <li key={i.label}>
+                  <span className="stamp"><IngredientStamp kind={i.kind} /></span>
+                  {i.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="about-card">
+            <h2><Tag /> Why Choose Us?</h2>
+            <ul>
+              {reasons.map((reason) => (
+                <li key={reason}>
+                  <span className="icon-dot"><Leaf /></span>
+                  {reason}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

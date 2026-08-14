@@ -32,6 +32,7 @@ function CartDrawer() {
     e.preventDefault();
     if (cart.length === 0) return;
 
+    // Automatically record order in Owner Accounting System
     const orderItems = cart.map((item) => ({
       name: item.product.name,
       size: item.product.size,
@@ -41,7 +42,6 @@ function CartDrawer() {
 
     const finalTotal = subtotal >= 150 ? subtotal : subtotal + 40;
 
-    // Automatically record order in Owner Accounting System
     createCustomerOrder({
       customerName: customerName || "Customer",
       phone: customerPhone || "Not specified",

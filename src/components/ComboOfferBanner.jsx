@@ -1,25 +1,38 @@
-import { Link } from "react-router-dom";
-import { Sparkles, ArrowRight } from "./Icons";
+import { WhatsApp } from "./Icons";
+import { business, whatsappLink } from "../data/business";
 
 function ComboOfferBanner() {
   return (
-    <section className="combo-banner-section container">
-      <div className="combo-banner-card">
-        <div className="combo-banner-content">
-          <span className="eyebrow"><Sparkles /> Limited Small Batch Deal</span>
-          <h2>Glow Radiance Combo Pack</h2>
-          <p>
-            Get Rose Water Spray (100ml) + Beetroot Glow Powder (50g) + Beetroot Tinted Lip Balm (20g) + <strong>FREE Rice Powder (25g)</strong>!
-          </p>
-          <div className="combo-price-row">
-            <span className="combo-original-price">₹190</span>
-            <span className="combo-deal-price">₹150</span>
-            <span className="combo-save-badge">Save ₹40 + FREE GIFT</span>
-          </div>
-          <Link to="/products" className="btn btn-primary btn-lg">
-            Shop Glow Combo Now <ArrowRight />
-          </Link>
+    <section className="combo-section">
+      <div className="combo-left">
+        <span className="eyebrow">Limited Time</span>
+        <h2 className="section-heading">Natural Glow Combo</h2>
+
+        <p className="combo-text">
+          Buy any <strong>2 products</strong> and get <strong>Rice Powder 25g free</strong>
+        </p>
+
+        <div className="combo-products">
+          <span>Beetroot Powder 50g</span>
+          <span>+</span>
+          <span>Rose Powder 50g</span>
+          <span>+</span>
+          <span>Rice Powder 25g free</span>
         </div>
+
+        <a
+          href={whatsappLink(`Hello ${business.name}, I'd like to order the Natural Glow Combo (₹199).`)}
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-whatsapp combo-cta"
+        >
+          <WhatsApp /> Claim This Combo
+        </a>
+      </div>
+
+      <div className="combo-price">
+        <h1>₹199</h1>
+        <p>Special Offer</p>
       </div>
     </section>
   );

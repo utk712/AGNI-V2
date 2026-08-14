@@ -1,57 +1,55 @@
 import { Link } from "react-router-dom";
-import { business, whatsappLink } from "../data/business";
-import { WhatsApp } from "./Icons";
+import { useProducts } from "../context/ProductContext";
+import { Phone, WhatsApp, Leaf } from "./Icons";
+import { business } from "../data/business";
 
 function Footer() {
-  const directMessageUrl = whatsappLink("Hello Akshaya Glow Naturals! I have a question about your natural skincare products.");
+  const { products } = useProducts();
 
   return (
-    <footer className="site-footer">
-      <div className="footer-container container">
-        {/* Col 1: Brand Info */}
-        <div className="footer-col footer-brand-col">
-          <div className="footer-logo">
-            <span className="brand-icon">🌿</span>
-            <span className="footer-title">{business.name}</span>
-          </div>
-          <p className="footer-desc">
-            Handcrafted in small kitchen batches with 100% pure Indian roses, organic beetroot, and traditional ayurvedic herbs. Zero chemicals, zero artificial fragrances.
-          </p>
-          <a href={directMessageUrl} target="_blank" rel="noreferrer" className="btn btn-whatsapp btn-sm">
-            <WhatsApp /> Chat on WhatsApp
-          </a>
+    <footer className="footer">
+      <div className="footer-container">
+        <div className="footer-section">
+          <span className="footer-brand">{business.name}</span>
+          <p>Nature's Goodness For A Natural Glow</p>
+          <p>Pure - Natural - Handmade</p>
         </div>
 
-        {/* Col 2: Quick Links */}
-        <div className="footer-col">
-          <h4 className="footer-heading">Explore</h4>
+        <div className="footer-section">
+          <h3>Quick Links</h3>
           <ul className="footer-links">
-            <li><Link to="/products">All Products</Link></li>
-            <li><Link to="/combo">Value Combos</Link></li>
-            <li><Link to="/about">Our Pure Story</Link></li>
-            <li><Link to="/admin">Owner Portal</Link></li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/about">About Us</Link></li>
+            <li><Link to="/products">Products</Link></li>
+            <li><Link to="/combo">Combo Offer</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
           </ul>
         </div>
 
-        {/* Col 3: Customer Care */}
-        <div className="footer-col">
-          <h4 className="footer-heading">Customer Care</h4>
-          <ul className="footer-contact-info">
-            <li>📱 WhatsApp: <strong>{business.phone}</strong></li>
-            <li>📍 Made with Love in India</li>
-            <li>🚚 Free Express Delivery over ₹150</li>
-            <li>🎁 Free 25g Rice Powder Gift with orders</li>
+        <div className="footer-section">
+          <h3>Our Range</h3>
+          <ul className="footer-links">
+            {products.slice(0, 6).map((p) => (
+              <li key={p.id}>
+                <Link to={`/product/${p.id}`}>{p.name}</Link>
+              </li>
+            ))}
           </ul>
+        </div>
+
+        <div className="footer-section">
+          <h3>Contact Us</h3>
+          <p className="footer-contact"><Phone /> {business.phoneDisplay}</p>
+          <p className="footer-contact"><WhatsApp /> WhatsApp orders available</p>
+          <p className="footer-contact"><Leaf /> Homemade natural skincare</p>
         </div>
       </div>
 
       <div className="footer-bottom">
-        <div className="container footer-bottom-flex">
-          <p>&copy; {new Date().getFullYear()} Akshaya Glow Naturals (AGNI). All rights reserved.</p>
-          <Link to="/admin" className="owner-portal-subtle-link">
-            🔒 Owner Access Studio
-          </Link>
-        </div>
+        <span>© {new Date().getFullYear()} {business.name}. All rights reserved.</span>
+        <Link to="/admin" className="owner-lock-link" title="Owner Access Portal">
+          🔒 Owner Portal
+        </Link>
       </div>
     </footer>
   );

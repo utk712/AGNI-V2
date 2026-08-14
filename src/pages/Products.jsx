@@ -44,18 +44,18 @@ function Products() {
   return (
     <>
       <div className="products-page">
-        <div className="products-intro text-center">
+        <div className="products-intro">
           <span className="eyebrow">
             <Sparkles /> Handcrafted Botanical Range
           </span>
           <h1 className="products-title">Our Pure Products</h1>
           <p className="products-subtitle">
-            Every product is made in small kitchen batches with 100% natural ingredients — add your items to your bag and order directly on WhatsApp.
+            Every product is made in small kitchen batches with 100% natural ingredients -- add your items to your bag and order directly on WhatsApp.
           </p>
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="catalog-controls-container container">
+        <div className="catalog-controls-container">
           <div className="search-box">
             <Search className="search-icon" />
             <input
@@ -107,7 +107,7 @@ function Products() {
         </div>
 
         {/* Products Grid */}
-        <div className="products-grid container">
+        <div className="products-grid">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />

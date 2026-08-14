@@ -42,7 +42,7 @@ function ProductDetails() {
   );
 
   const relatedProducts = products
-    .filter((p) => p.id !== product.id && p.categoryLabel === product.categoryLabel)
+    .filter((p) => p.id !== product.id && p.category === product.category)
     .slice(0, 3);
 
   return (
@@ -101,8 +101,8 @@ function ProductDetails() {
             ) : (
               <div className="free-gift-notice">
                 <p>🎁 This item is <strong>FREE</strong> when you buy any combo or order over ₹150!</p>
-                <Link to="/products" className="btn btn-primary">
-                  Browse Store Items <ArrowRight />
+                <Link to="/combo" className="btn btn-primary">
+                  View Special Combos <ArrowRight />
                 </Link>
               </div>
             )}

@@ -9,9 +9,9 @@ function BestSellers() {
   const displayItems = featured.length > 0 ? featured : products.slice(0, 3);
 
   return (
-    <section className="best-sellers container">
+    <section className="best-sellers">
       <div className="section-intro">
-        <span className="eyebrow">Small Batch Favorites</span>
+        <span className="eyebrow">Small Batch Favourites</span>
         <h2 className="section-heading">Our Best Sellers</h2>
       </div>
 

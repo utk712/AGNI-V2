@@ -26,10 +26,10 @@ function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinError, setPinError] = useState("");
 
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("dashboard"); // 'dashboard' | 'orders' | 'accounting' | 'products' | 'profile'
   const [successMsg, setSuccessMsg] = useState("");
 
-  // Owner Setup Form State
+  // Owner Setup / Update Form State
   const [ownerName, setOwnerName] = useState("");
   const [ownerPhone, setOwnerPhone] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");

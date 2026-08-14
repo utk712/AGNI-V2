@@ -1,62 +1,72 @@
 import { Link } from "react-router-dom";
-import { Sparkles, ArrowRight, WhatsApp } from "./Icons";
-import { whatsappLink } from "../data/business";
+import { motion } from "framer-motion";
+import { Leaf, HandHeart, Droplet, Tag, WhatsApp, ArrowRight } from "./Icons";
+import HeroArt from "./HeroArt";
+import { business, whatsappLink } from "../data/business";
+
+const features = [
+  { icon: <Leaf />, label: "Natural Ingredients" },
+  { icon: <Droplet />, label: "Chemical Free" },
+  { icon: <HandHeart />, label: "Handmade" },
+  { icon: <Tag />, label: "Skin Friendly" },
+];
 
 function Hero() {
-  const directConsultation = whatsappLink("Hello Akshaya Glow Naturals! I'd like a custom skin recommendation for my skin type.");
-
   return (
-    <section className="hero-section container">
-      <div className="hero-grid">
-        <div className="hero-content">
-          <span className="eyebrow">
-            <Sparkles /> 100% Handcrafted Botanical Skincare
-          </span>
-          <h1 className="hero-title">
-            Pure Plants.<br />Natural Radiance.
-          </h1>
-          <p className="hero-description">
-            Experience freshly distilled Damask Rose Water, antioxidant-rich organic Beetroot Powder, and nourishing lip mists. Small-batch ayurvedic formulas made with zero synthetic chemicals.
-          </p>
-
-          <div className="hero-actions">
-            <Link to="/products" className="btn btn-primary btn-lg">
-              Explore Botanical Range <ArrowRight />
-            </Link>
-            <a href={directConsultation} target="_blank" rel="noreferrer" className="btn btn-whatsapp btn-lg">
-              <WhatsApp /> Consult on WhatsApp
-            </a>
-          </div>
-
-          <div className="hero-stats">
-            <div className="stat-item">
-              <span className="stat-value">100%</span>
-              <span className="stat-label">Chemical Free</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">Small Batch</span>
-              <span className="stat-label">Kitchen Fresh</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-value">Direct</span>
-              <span className="stat-label">WhatsApp Delivery</span>
-            </div>
-          </div>
+    <section className="hero">
+      <motion.div
+        className="hero-left"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <div className="hero-badge">
+          <Leaf /> 100% Natural &amp; Handmade
         </div>
 
-        <div className="hero-media-box">
-          <img
-            src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop&q=80"
-            alt="Pure Rose Water Distillation"
-            className="hero-main-photo"
-          />
-          <div className="hero-floating-card">
-            <span className="gift-badge">🎁 Special Offer</span>
-            <h4>Free 25g Rice Powder</h4>
-            <p>Automatically added on orders over ₹150!</p>
-          </div>
+        <h1 className="hero-title">
+          Nature's Glow,
+          <br />
+          Bottled By Hand.
+        </h1>
+
+        <p className="hero-subtitle">
+          Rose, beetroot and herbal skincare made in small kitchen batches --
+          no chemicals, no shortcuts, just what your skin actually needs.
+        </p>
+
+        <div className="hero-features">
+          {features.map((f) => (
+            <span key={f.label}>
+              {f.icon} {f.label}
+            </span>
+          ))}
         </div>
-      </div>
+
+        <div className="hero-buttons">
+          <Link to="/products" className="btn btn-primary">
+            View Products <ArrowRight />
+          </Link>
+
+          <a
+            href={whatsappLink(`Hello ${business.name}, I'd like to place an order.`)}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-whatsapp"
+          >
+            <WhatsApp /> Order on WhatsApp
+          </a>
+        </div>
+      </motion.div>
+
+      <motion.div
+        className="hero-right"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
+      >
+        <HeroArt className="hero-image" />
+      </motion.div>
     </section>
   );
 }

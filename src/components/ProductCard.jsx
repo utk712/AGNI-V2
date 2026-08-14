@@ -1,78 +1,61 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import { IngredientStamp, ShoppingBag } from "./Icons";
 import { useCart } from "../context/CartContext";
-import { ShoppingBag, Check } from "./Icons";
 
 function ProductCard({ product }) {
-  const { addToCart, openCart } = useCart();
-  const [added, setAdded] = useState(false);
-
-  const handleAdd = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product, 1);
-    setAdded(true);
-    openCart();
-    setTimeout(() => setAdded(false), 2000);
-  };
+  const { addToCart } = useCart();
 
   const isFreeGift = product.numericPrice === 0;
 
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isFreeGift) {
+      addToCart(product, 1);
+    }
+  };
+
   return (
     <div className="product-card">
-      <Link to={`/product/${product.id}`} className="product-card-media-link">
-        <div className="product-card-img-box">
-          {product.image ? (
-            <img
-              src={product.image}
-              alt={product.name}
-              className="product-card-photo"
-              loading="lazy"
-            />
-          ) : (
-            <div className="placeholder-stamp">🌿</div>
-          )}
-          {product.bestSeller && (
-            <span className="product-badge badge-bestseller">BESTSELLER</span>
-          )}
-          {isFreeGift && (
-            <span className="product-badge badge-free">FREE GIFT</span>
-          )}
-        </div>
+      <Link to={`/product/${product.id}`} className="product-card-media">
+        {product.image ? (
+          <img src={product.image} alt={product.name} className="product-photo" />
+        ) : (
+          <span className="stamp product-stamp">
+            <IngredientStamp kind={product.category} />
+          </span>
+        )}
+
+        {product.bestSeller && <span className="product-badge badge-bestseller">BESTSELLER</span>}
+        {isFreeGift && <span className="product-badge badge-free">FREE GIFT</span>}
       </Link>
 
       <div className="product-card-body">
-        <span className="product-card-category">{product.categoryLabel || "Pure Skincare"}</span>
-        <h3 className="product-card-title">
-          <Link to={`/product/${product.id}`}>{product.name}</Link>
-        </h3>
+        <Link to={`/product/${product.id}`} className="product-card-title">
+          <h3>{product.name}</h3>
+        </Link>
+
         <p className="product-card-tagline">{product.tagline}</p>
 
-        <div className="product-card-footer">
-          <div className="product-card-price-box">
-            <span className="product-card-price">{product.price}</span>
-            <span className="product-card-size">({product.size})</span>
-          </div>
+        <div className="product-price-row">
+          <span className="product-card-size">{product.size}</span>
+          <h2 className="product-price-val">{product.price}</h2>
+        </div>
 
+        <div className="product-card-actions">
           {!isFreeGift ? (
-            <button
-              className={`btn btn-sm ${added ? "btn-success" : "btn-primary"}`}
-              onClick={handleAdd}
-              aria-label={`Add ${product.name} to bag`}
-            >
-              {added ? (
-                <>
-                  <Check /> Added
-                </>
-              ) : (
-                <>
-                  <ShoppingBag /> Add
-                </>
-              )}
+            <button className="btn btn-primary btn-sm flex-1" onClick={handleAddToCart}>
+              <ShoppingBag /> Add to Bag
             </button>
           ) : (
-            <span className="free-tag">Free on ₹150+ Order</span>
+            <Link to="/combo" className="btn btn-primary btn-sm flex-1">
+              Unlock Free Gift
+            </Link>
           )}
+
+          <Link to={`/product/${product.id}`} className="btn btn-outline btn-sm" title="View details">
+            Details
+          </Link>
         </div>
       </div>
     </div>

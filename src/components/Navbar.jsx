@@ -1,89 +1,124 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import { Menu, Close, WhatsApp, ShoppingBag } from "./Icons";
+import { business, whatsappLink } from "../data/business";
 import { useCart } from "../context/CartContext";
-import { ShoppingBag, Menu, X, Sparkles } from "./Icons";
+import logo from "../assets/brand/logo.jpg";
+import "./Navbar.css";
+
+const links = [
+  { to: "/", label: "Home" },
+  { to: "/products", label: "Products" },
+  { to: "/combo", label: "Combo Offer" },
+  { to: "/about", label: "About Us" },
+  { to: "/contact", label: "Contact" },
+];
 
 function Navbar() {
-  const { cart, openCart } = useCart();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const { totalItemsCount, openCart } = useCart();
 
-  const totalItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) setOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <>
-      {/* Top Banner */}
-      <div className="announcement-bar">
-        <span>🌿 100% Pure Chemical-Free Skincare • Free 25g Rice Powder on Orders Over ₹150!</span>
-      </div>
+    <nav className="navbar">
+      <div className="navbar-inner container">
+        <NavLink to="/" className="logo" onClick={() => setOpen(false)}>
+          <img src={logo} alt={business.name} className="logo-mark" />
+          <span className="logo-text">Akshaya Glow Naturals</span>
+        </NavLink>
 
-      <header className="site-header">
-        <div className="header-container container">
-          {/* Mobile Hamburger Toggle */}
-          <button
-            className="mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle navigation"
-          >
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
-
-          {/* Brand Logo */}
-          <Link to="/" className="brand-logo">
-            <span className="brand-icon">🌿</span>
-            <div className="brand-text">
-              <span className="brand-title">Akshaya Glow</span>
-              <span className="brand-subtitle">NATURALS</span>
-            </div>
-          </Link>
-
-          {/* Desktop Nav Links */}
-          <nav className="desktop-nav">
-            <NavLink to="/" end className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-              Home
+        <div className="nav-links nav-links-desktop">
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) => (isActive ? "active" : undefined)}
+              end={link.to === "/"}
+            >
+              {link.label}
             </NavLink>
-            <NavLink to="/products" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-              All Products
-            </NavLink>
-            <NavLink to="/combo" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-              Special Combos
-            </NavLink>
-            <NavLink to="/about" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-              Our Philosophy
-            </NavLink>
-          </nav>
-
-          {/* Cart Bag Icon CTA Button */}
-          <div className="header-actions">
-            <button className="cart-trigger-btn" onClick={openCart} aria-label="Open Shopping Bag">
-              <ShoppingBag />
-              <span className="cart-btn-text">Bag</span>
-              {totalItemCount > 0 && <span className="cart-badge">{totalItemCount}</span>}
-            </button>
-          </div>
+          ))}
         </div>
 
-        {/* Mobile Flyout Menu */}
-        {mobileMenuOpen && (
-          <div className="mobile-dropdown-menu">
-            <NavLink to="/" end onClick={() => setMobileMenuOpen(false)}>
-              Home
-            </NavLink>
-            <NavLink to="/products" onClick={() => setMobileMenuOpen(false)}>
-              All Botanical Products
-            </NavLink>
-            <NavLink to="/combo" onClick={() => setMobileMenuOpen(false)}>
-              Special Value Combos
-            </NavLink>
-            <NavLink to="/about" onClick={() => setMobileMenuOpen(false)}>
-              Our Pure Ingredients
-            </NavLink>
-            <NavLink to="/admin" onClick={() => setMobileMenuOpen(false)} className="owner-menu-link">
-              🔐 Owner Admin Portal
-            </NavLink>
-          </div>
+        <div className="nav-right-actions">
+          <button className="nav-cart-btn" onClick={openCart} aria-label="Open cart bag">
+            <ShoppingBag />
+            <span className="nav-cart-label">Bag</span>
+            {totalItemsCount > 0 && <span className="cart-badge">{totalItemsCount}</span>}
+          </button>
+
+          <a
+            href={whatsappLink(`Hello ${business.name}, I'd like to place an order.`)}
+            target="_blank"
+            rel="noreferrer"
+            className="whatsapp-btn nav-links-desktop"
+          >
+            <WhatsApp /> WhatsApp
+          </a>
+
+          <button
+            className="nav-toggle"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <Close /> : <Menu />}
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="nav-mobile"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+          >
+            <div className="nav-mobile-links">
+              {links.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) => (isActive ? "active" : undefined)}
+                  end={link.to === "/"}
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+              <button
+                className="btn btn-outline btn-block"
+                onClick={() => {
+                  setOpen(false);
+                  openCart();
+                }}
+              >
+                <ShoppingBag /> View Bag ({totalItemsCount})
+              </button>
+              <a
+                href={whatsappLink(`Hello ${business.name}, I'd like to place an order.`)}
+                target="_blank"
+                rel="noreferrer"
+                className="whatsapp-btn"
+                onClick={() => setOpen(false)}
+              >
+                <WhatsApp /> Order on WhatsApp
+              </a>
+            </div>
+          </motion.div>
         )}
-      </header>
-    </>
+      </AnimatePresence>
+    </nav>
   );
 }
 

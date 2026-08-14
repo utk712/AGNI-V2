@@ -1,45 +1,40 @@
-import { Check, Sparkles } from "./Icons";
+import FeatureCard from "./FeatureCard";
+import { Leaf, Droplet, HandHeart, Tag } from "./Icons";
 
-const featuresData = [
+const features = [
   {
-    icon: "🌸",
-    title: "Fresh Rose Distillation",
-    desc: "Distilled from pure Indian Damask rose petals for natural pore tightening and hydration."
+    icon: <Leaf />,
+    title: "Pure Natural Ingredients",
+    description: "Made with natural herbs and flowers",
   },
   {
-    icon: "🌱",
-    title: "Sun-Dried Botanical Powders",
-    desc: "Beetroot and Rice powders dehydrated carefully to preserve active Vitamin C and antioxidants."
+    icon: <Droplet />,
+    title: "Chemical Free",
+    description: "No harmful chemicals, safe for skin",
   },
   {
-    icon: "🍯",
-    title: "Pure Beeswax Lip Mists",
-    desc: "Cold-pressed oils and natural beeswax for long-lasting lip softness with a rosy flush."
+    icon: <HandHeart />,
+    title: "Handmade",
+    description: "Prepared in small batches with care",
   },
   {
-    icon: "🚚",
-    title: "Direct WhatsApp Delivery",
-    desc: "Order directly on WhatsApp with zero hassle and fast dispatch to your doorstep."
-  }
+    icon: <Tag />,
+    title: "Affordable",
+    description: "Premium quality at reasonable prices",
+  },
 ];
 
 function Features() {
   return (
-    <section className="features-section container">
-      <div className="section-intro text-center">
-        <span className="eyebrow"><Sparkles /> The AGNI Guarantee</span>
-        <h2 className="section-heading">Why Choose Our Botanical Formulas?</h2>
-      </div>
-
-      <div className="features-grid">
-        {featuresData.map((f, i) => (
-          <div key={i} className="feature-card">
-            <div className="feature-icon">{f.icon}</div>
-            <h3>{f.title}</h3>
-            <p>{f.desc}</p>
-          </div>
-        ))}
-      </div>
+    <section className="features-section">
+      {features.map((feature) => (
+        <FeatureCard
+          key={feature.title}
+          icon={feature.icon}
+          title={feature.title}
+          description={feature.description}
+        />
+      ))}
     </section>
   );
 }
