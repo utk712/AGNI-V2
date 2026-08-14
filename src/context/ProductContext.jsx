@@ -4,24 +4,17 @@ import { fetchCloudStore, saveCloudStore } from "../services/cloudSync";
 
 const ProductContext = createContext();
 
-const DEFAULT_OWNER_PROFILE = {
-  isConfigured: true,
-  name: "Owner",
-  phone: "9302579140",
-  email: "akshayaglownaturals@gmail.com",
-  password: "231204",
-};
-
 export function ProductProvider({ children }) {
-  const [products, setProducts] = useState(initialCatalog);
+  // Default to 0 hardcoded products
+  const [products, setProducts] = useState([]);
   const [customerOrders, setCustomerOrders] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [ownerProfile, setOwnerProfile] = useState(() => {
     try {
       const saved = localStorage.getItem("agni_owner_profile_v2");
-      return saved ? JSON.parse(saved) : DEFAULT_OWNER_PROFILE;
+      return saved ? JSON.parse(saved) : null;
     } catch {
-      return DEFAULT_OWNER_PROFILE;
+      return null;
     }
   });
 
@@ -33,7 +26,7 @@ export function ProductProvider({ children }) {
       const savedProds = localStorage.getItem("agni_custom_products_v2");
       if (savedProds) {
         const parsed = JSON.parse(savedProds);
-        if (Array.isArray(parsed) && parsed.length > 0) setProducts(parsed);
+        if (Array.isArray(parsed)) setProducts(parsed);
       }
       const savedOrders = localStorage.getItem("agni_customer_orders_v2");
       if (savedOrders) setCustomerOrders(JSON.parse(savedOrders));
@@ -48,12 +41,12 @@ export function ProductProvider({ children }) {
     }
   }, []);
 
-  // Fetch Cloud Master state (Tightly integrated with Vercel /api/store)
+  // Fetch Cloud Master state (Integrated with Vercel /api/store)
   useEffect(() => {
     async function syncWithCloudMaster() {
       const cloudData = await fetchCloudStore();
       if (cloudData && typeof cloudData === "object") {
-        if (cloudData.products && Array.isArray(cloudData.products) && cloudData.products.length > 0) {
+        if (cloudData.products && Array.isArray(cloudData.products)) {
           setProducts(cloudData.products);
           localStorage.setItem("agni_custom_products_v2", JSON.stringify(cloudData.products));
         }
@@ -65,7 +58,7 @@ export function ProductProvider({ children }) {
           setExpenses(cloudData.expenses);
           localStorage.setItem("agni_expenses_v2", JSON.stringify(cloudData.expenses));
         }
-        if (cloudData.ownerProfile && typeof cloudData.ownerProfile === "object") {
+        if (cloudData.ownerProfile && typeof cloudData.ownerProfile === "object" && cloudData.ownerProfile.password) {
           setOwnerProfile(cloudData.ownerProfile);
           localStorage.setItem("agni_owner_profile_v2", JSON.stringify(cloudData.ownerProfile));
         }
@@ -75,7 +68,7 @@ export function ProductProvider({ children }) {
 
     syncWithCloudMaster();
 
-    // Auto-sync with Vercel API endpoint every 5 seconds for live cross-device updates!
+    // Auto-sync every 5 seconds for live cross-device updates!
     const pollInterval = setInterval(() => {
       syncWithCloudMaster();
     }, 5000);
@@ -116,6 +109,7 @@ export function ProductProvider({ children }) {
       ingredients: typeof newProd.ingredients === "string" 
         ? newProd.ingredients.split(",").map((s) => s.trim()).filter(Boolean)
         : newProd.ingredients || [],
+      bestSeller: Boolean(newProd.bestSeller),
     };
 
     const updated = [productToAdd, ...products];
@@ -152,10 +146,10 @@ export function ProductProvider({ children }) {
     persistState(updated, customerOrders, expenses, ownerProfile);
   };
 
-  const resetDefaultProducts = () => {
-    setProducts(initialCatalog);
-    localStorage.setItem("agni_custom_products_v2", JSON.stringify(initialCatalog));
-    persistState(initialCatalog, customerOrders, expenses, ownerProfile);
+  const clearAllProducts = () => {
+    setProducts([]);
+    localStorage.setItem("agni_custom_products_v2", JSON.stringify([]));
+    persistState([], customerOrders, expenses, ownerProfile);
   };
 
   const createCustomerOrder = (orderData) => {
@@ -217,7 +211,9 @@ export function ProductProvider({ children }) {
 
   const purgeStaleMobileCache = async () => {
     localStorage.clear();
-    localStorage.setItem("agni_owner_profile_v2", JSON.stringify(ownerProfile));
+    if (ownerProfile) {
+      localStorage.setItem("agni_owner_profile_v2", JSON.stringify(ownerProfile));
+    }
     const cloudData = await fetchCloudStore();
     if (cloudData) {
       if (cloudData.products) setProducts(cloudData.products);
@@ -234,7 +230,7 @@ export function ProductProvider({ children }) {
         addProduct,
         updateProduct,
         deleteProduct,
-        resetDefaultProducts,
+        clearAllProducts,
         customerOrders,
         createCustomerOrder,
         updateOrderStatus,

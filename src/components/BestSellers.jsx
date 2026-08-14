@@ -5,18 +5,22 @@ import { ArrowRight } from "./Icons";
 
 function BestSellers() {
   const { products } = useProducts();
-  const featured = products.filter((p) => p.bestSeller).slice(0, 3);
-  const displayItems = featured.length > 0 ? featured : products.slice(0, 3);
+
+  // Filter ONLY products marked as bestSeller === true by owner
+  const featured = products.filter((p) => p.bestSeller === true);
+
+  if (products.length === 0) return null;
+  if (featured.length === 0) return null;
 
   return (
-    <section className="best-sellers">
+    <section className="best-sellers container">
       <div className="section-intro">
-        <span className="eyebrow">Small Batch Favourites</span>
+        <span className="eyebrow">Small Batch Favorites</span>
         <h2 className="section-heading">Our Best Sellers</h2>
       </div>
 
       <div className="products-grid">
-        {displayItems.map((product) => (
+        {featured.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
